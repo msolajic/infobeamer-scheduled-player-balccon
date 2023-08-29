@@ -104,6 +104,10 @@ function M.updated_schedule_json(new_schedule)
                 name = talk.track,
                 background = fallback_track_background,
             }
+            talk.room = rooms[talk.room] or {
+                name = talk.room,
+                background = fallback_track_background,
+            }
         end
     end
 end
