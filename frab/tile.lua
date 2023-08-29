@@ -476,31 +476,31 @@ local function view_all_talks(starts, ends, config, x1, y1, x2, y2)
         local til = talk.start_unix - now
         if til > -60 and til < 60 then
             time = "Now"
-            local w = font:width(time, time_size)+time_size
+            local w = font:width(time, time_size)+time_size/2
             text(x+split_x-w, y, time, time_size, rgba(default_color, 1))
             local y_time = y+time_size
-            local w2 = font:width(rooms[talk.place].name_short, info_size)+time_size
+            local w2 = font:width(rooms[talk.place].name_short, info_size)+time_size/2
             text(x+split_x-w2, y_time, rooms[talk.place].name_short, info_size, rgba(default_color,.8))
         elseif til > 0 and til < 15 * 60 then
             time = string.format("In %d min", math.floor(til/60))
-            local w = font:width(time, time_size)+time_size
+            local w = font:width(time, time_size)+time_size/2
             text(x+split_x-w, y, time, time_size, rgba(default_color, 1))
             local y_time = y+time_size
-            local w2 = font:width(rooms[talk.place].name_short, info_size)+time_size
+            local w2 = font:width(rooms[talk.place].name_short, info_size)+time_size/2
             text(x+split_x-w2, y_time, rooms[talk.place].name_short, info_size, rgba(default_color,.8))
         elseif talk.start_unix > now then
             time = talk.start_str
-            local w = font:width(time, time_size)+time_size
+            local w = font:width(time, time_size)+time_size/2
             text(x+split_x-w, y, time, time_size, rgba(default_color, 1))
             local y_time = y+time_size
-            local w2 = font:width(rooms[talk.place].name_short, info_size)+time_size
+            local w2 = font:width(rooms[talk.place].name_short, info_size)+time_size/2
             text(x+split_x-w2, y_time, rooms[talk.place].name_short, info_size, rgba(default_color,.8))
         else
             time = string.format("%d min ago", math.ceil(-til/60))
-            local w = font:width(time, time_size)+time_size
+            local w = font:width(time, time_size)+time_size/2
             text(x+split_x-w, y, time, time_size, rgba(default_color,.8))
             local y_time = y+time_size
-            local w2 = font:width(rooms[talk.place].name_short, info_size)+time_size
+            local w2 = font:width(rooms[talk.place].name_short, info_size)+time_size/2
             text(x+split_x-w2, y_time, rooms[talk.place].name_short, info_size, rgba(default_color,.8))
         end
 
