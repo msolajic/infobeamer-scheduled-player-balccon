@@ -477,19 +477,19 @@ local function view_all_talks(starts, ends, config, x1, y1, x2, y2)
         if til > -60 and til < 60 then
             time = "Now"
             local w = font:width(time, time_size)+time_size
-            text(x+split_x-w, y, time, time_size, rgba(default_color, 1))
+            text(x+split_x-w, y, time .. rooms[talk.place].name_short, time_size, rgba(default_color, 1))
         elseif til > 0 and til < 15 * 60 then
             time = string.format("In %d min", math.floor(til/60))
             local w = font:width(time, time_size)+time_size
-            text(x+split_x-w, y, time, time_size, rgba(default_color, 1))
+            text(x+split_x-w, y, time .. rooms[talk.place].name_short, time_size, rgba(default_color, 1))
         elseif talk.start_unix > now then
             time = talk.start_str
             local w = font:width(time, time_size)+time_size
-            text(x+split_x-w, y, time, time_size, rgba(default_color, 1))
+            text(x+split_x-w, y, time .. rooms[talk.place].name_short, time_size, rgba(default_color, 1))
         else
             time = string.format("%d min ago", math.ceil(-til/60))
             local w = font:width(time, time_size)+time_size
-            text(x+split_x-w, y, time, time_size, rgba(default_color,.8))
+            text(x+split_x-w, y, time .. rooms[talk.place].name_short, time_size, rgba(default_color,.8))
         end
 
         -- track bar
