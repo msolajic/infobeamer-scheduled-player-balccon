@@ -50,7 +50,7 @@ function M.updated_config_json(config)
             color = {room.color.r, room.color.g, room.color.b},
         }
     end
-
+    pp(rooms)
     if current_room then
         local info_lines = {}
         for line in string.gmatch(current_room.info.."\n", "([^\n]*)\n") do
