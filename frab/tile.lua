@@ -48,10 +48,6 @@ function M.updated_config_json(config)
             room.name_short = room.name
         end
         rooms[room.name] = room
-        rooms[room.name] = {
-            background = resource.create_colored_texture(unpack(room.color.rgba)),
-            color = {room.color.r, room.color.g, room.color.b},
-        }
     end
 
     if current_room then
@@ -510,7 +506,7 @@ local function view_all_talks(starts, ends, config, x1, y1, x2, y2)
 
         -- track bar
         a.add(anims.moving_image_raw(
-            S, E, talk.room.background,
+            S, E, talk.track.background,
             x+split_x-25, y, x+split_x-12,
             y + title_size*#title_lines + 3 + #info_lines*info_size
         ))
