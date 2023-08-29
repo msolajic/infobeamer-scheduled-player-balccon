@@ -128,6 +128,12 @@
             "rows": 6,
             "placeholder": "Key,Value pairs in each line",
             "default": ""
+        }, {
+            "title": "Color",
+            "ui_width": 3,
+            "name": "color",
+            "type": "color",
+            "default": [1,1,1,1]
         }]
     }, {
         "title": "Tracks",
