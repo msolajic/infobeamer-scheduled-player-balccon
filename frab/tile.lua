@@ -93,7 +93,7 @@ function M.updated_schedule_json(new_schedule)
                 #talk.speakers == 0 and "" or
                 (({
                     de = " mit ",
-                })[talk.lang] or " | ") .. table.concat(talk.speakers, " | ")
+                })[talk.lang] or "") .. table.concat(talk.speakers, " | ")
             )
 
             talk.track = tracks[talk.track] or {
