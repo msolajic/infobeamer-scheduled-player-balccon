@@ -479,25 +479,25 @@ local function view_all_talks(starts, ends, config, x1, y1, x2, y2)
             local w = font:width(time, time_size)+time_size
             text(x+split_x-w, y, time, time_size, rgba(default_color, 1))
             local y_time = y+time_size
-            text(x+split_x-w, y_time, rooms[talk.place].name_short, time_size, rgba(default_color,1))
+            text(x+split_x-w, y_time, rooms[talk.place].name_short, info_size, rgba(default_color,.8))
         elseif til > 0 and til < 15 * 60 then
             time = string.format("In %d min", math.floor(til/60))
             local w = font:width(time, time_size)+time_size
             text(x+split_x-w, y, time, time_size, rgba(default_color, 1))
             local y_time = y+time_size
-            text(x+split_x-w, y_time, rooms[talk.place].name_short, time_size, rgba(default_color,1))
+            text(x+split_x-w, y_time, rooms[talk.place].name_short, info_size, rgba(default_color,.8))
         elseif talk.start_unix > now then
             time = talk.start_str
             local w = font:width(time, time_size)+time_size
             text(x+split_x-w, y, time, time_size, rgba(default_color, 1))
             local y_time = y+time_size
-            text(x+split_x-w, y_time, rooms[talk.place].name_short, time_size, rgba(default_color,1))
+            text(x+split_x-w, y_time, rooms[talk.place].name_short, info_size, rgba(default_color,.8))
         else
             time = string.format("%d min ago", math.ceil(-til/60))
             local w = font:width(time, time_size)+time_size
             text(x+split_x-w, y, time, time_size, rgba(default_color,.8))
             local y_time = y+time_size
-            text(x+split_x-w, y_time, rooms[talk.place].name_short, time_size, rgba(default_color,1))
+            text(x+split_x-w, y_time, rooms[talk.place].name_short, info_size, rgba(default_color,.8))
         end
 
         -- track bar
