@@ -44,13 +44,12 @@ function M.updated_config_json(config)
             print("found my room")
             current_room = room
         end
-        rooms[room.name] = {
-            name = room.name_short,
-            background = resource.create_colored_texture(unpack(room.color.rgba)),
-            color = {room.color.r, room.color.g, room.color.b},
-        }
+        if room.name_short == "" then
+            room.name_short = room.name
+        end
+        rooms[room.name] = room
     end
-    pp(rooms)
+    
     if current_room then
         local info_lines = {}
         for line in string.gmatch(current_room.info.."\n", "([^\n]*)\n") do
