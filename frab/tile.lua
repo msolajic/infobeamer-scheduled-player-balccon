@@ -44,10 +44,11 @@ function M.updated_config_json(config)
             print("found my room")
             current_room = room
         end
-        if room.name_short == "" then
-            room.name_short = room.name
-        end
-        rooms[room.name] = room
+        rooms[room.name] = {
+            name = room.name_short,
+            background = resource.create_colored_texture(unpack(room.color.rgba)),
+            color = {room.color.r, room.color.g, room.color.b},
+        }
     end
 
     if current_room then
