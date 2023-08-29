@@ -1,6 +1,6 @@
 {
     "name": "Scheduled Player BalCCon",
-    "author": "Florian Wesch <fw@info-beamer.com>, Marko Solajic <msolajic@gmail.com>",
+    "author": "Florian Wesch, Marko Solajic",
     "desc": "A schedulable playlist player with custom pages, plugins and animations",
     "repository": "https://github.com/msolajic/infobeamer-scheduled-player-balccon",
     "version": "19",
