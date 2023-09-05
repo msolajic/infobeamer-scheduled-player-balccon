@@ -319,7 +319,7 @@ local function view_other_talks(starts, ends, config, x1, y1, x2, y2)
         )
 
         local info_lines = wrap(
-            rooms[talk.place].name_short .. talk.speaker_intro,
+            talk.speaker_intro,
             font, info_size, a.width - split_x
         )
 
@@ -341,18 +341,30 @@ local function view_other_talks(starts, ends, config, x1, y1, x2, y2)
             time = "Now"
             local w = font:width(time, time_size)+time_size
             text(x+split_x-w, y, time, time_size, r,g,b,1)
+            local y_time = y+time_size
+            local w2 = font:width(rooms[talk.place].name_short, info_size)+time_size
+            text(x+split_x-w2, y_time, rooms[talk.place].name_short, info_size, rgba(default_color,.8))
         elseif til > 0 and til < 15 * 60 then
             time = string.format("In %d min", math.floor(til/60))
             local w = font:width(time, time_size)+time_size
             text(x+split_x-w, y, time, time_size, r,g,b,1)
+            local y_time = y+time_size
+            local w2 = font:width(rooms[talk.place].name_short, info_size)+time_size
+            text(x+split_x-w2, y_time, rooms[talk.place].name_short, info_size, rgba(default_color,.8))
         elseif talk.start_unix > now then
             time = talk.start_str
             local w = font:width(time, time_size)+time_size
             text(x+split_x-w, y, time, time_size, r,g,b,1)
+            local y_time = y+time_size
+            local w2 = font:width(rooms[talk.place].name_short, info_size)+time_size
+            text(x+split_x-w2, y_time, rooms[talk.place].name_short, info_size, rgba(default_color,.8))
         else
             time = string.format("%d min ago", math.ceil(-til/60))
             local w = font:width(time, time_size)+time_size
             text(x+split_x-w, y, time, time_size, r,g,b,.8)
+            local y_time = y+time_size
+            local w2 = font:width(rooms[talk.place].name_short, info_size)+time_size
+            text(x+split_x-w2, y_time, rooms[talk.place].name_short, info_size, rgba(default_color,.8))
         end
 
         -- track bar
