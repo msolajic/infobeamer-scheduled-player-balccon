@@ -281,6 +281,7 @@ local function view_other_talks(starts, ends, config, x1, y1, x2, y2)
     local title_size = config.font_size or 70
     local align = config.other_align or "left"
     local r,g,b = helper.parse_rgb(config.color or "#ffffff")
+    local default_color = {helper.parse_rgb(config.color or "#ffffff")}
 
     local a = anims.Area(x2 - x1, y2 - y1)
 
