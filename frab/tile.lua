@@ -254,7 +254,7 @@ local function view_next_talk(starts, ends, config, x1, y1, x2, y2)
         -- Abstract
         if abstract then
             local lines = wrap(current_talk.abstract, font, abstract_size, a.width - col2)
-            for idx = 1, math.min(5, #lines) do
+            for idx = 1, math.min(7, #lines) do
                 text(col2, y, lines[idx], abstract_size, rgba(default_color,1))
                 y = y + abstract_size
             end
