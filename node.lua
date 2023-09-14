@@ -389,7 +389,11 @@ local schedule_clock = setmetatable({
     end,
 })
 node.event("config_updated", function(config)
-    schedule_clock.tz = config.timezone
+    if config.timezone == "device" then
+        schedule_clock.tz = config.__metadata.timezone
+    else
+        schedule_clock.tz = config.timezone
+    end
 end)
 
 local function clock_for_tz_or_default(tz)
@@ -1048,30 +1052,71 @@ local function TimeTile(asset, config, x1, y1, x2, y2)
 
     if clock_mode == "digital_clock" then
         local size = y2 - y1
-        local font, fmt
 
+        local font
         if clock_style == 1 then
             font = font_7seg
         else
             font = font_regl
         end
 
-        if clock_type == "hms" then
-            fmt = "%02d:%02d:%02d"
-        else
-            fmt = "%02d:%02d"
+        local formatter
+        if clock_type == "hm" then
+            formatter = function(t)
+                return string.format("%02d:%02d",
+                    math.floor(t / 3600),
+                    math.floor(t % 3600 / 60)
+                ), '99:99', ''
+            end
+        elseif clock_type == "hms" then
+            formatter = function(t)
+                return string.format("%02d:%02d:%02d",
+                    math.floor(t / 3600),
+                    math.floor(t % 3600 / 60),
+                    math.floor(t % 60)
+                ), '99:99:99', ''
+            end
+        elseif clock_type == "hm_12" then
+            formatter = function(t)
+                local hours = math.floor(t / 3600)
+                local minutes = math.floor(t % 3600 / 60)
+                local ampm = "am"
+                if hours >= 12 then
+                    ampm = "pm"
+                    hours = hours - 12
+                end
+                if hours == 0 then
+                    hours = 12
+                end
+                return string.format("%02d:%02d",
+                    hours, minutes
+                ), '99:99', ' '..ampm
+            end
+        elseif clock_type == "hms_12" then
+            formatter = function(t)
+                local hours = math.floor(t / 3600)
+                local minutes = math.floor(t % 3600 / 60)
+                local seconds = math.floor(t % 60)
+                local ampm = "am"
+                if hours >= 12 then
+                    ampm = "pm"
+                    hours = hours - 12
+                end
+                if hours == 0 then
+                    hours = 12
+                end
+                return string.format("%02d:%02d:%02d",
+                    hours, minutes, seconds
+                ), '99:99:99', ' '..ampm
+            end
         end
 
         return function(starts, ends)
             for now in helper.frame_between(starts, ends) do
-                local t = clock.since_midnight()
-                local time = string.format(fmt,
-                    math.floor(t / 3600),
-                    math.floor(t % 3600 / 60),
-                    math.floor(t % 60)
-                )
+                local time, tmpl, suffix = formatter(clock.since_midnight())
 
-                local w = font:width(time, size)
+                local w_time = font:width(tmpl, size)
+                local w = w_time + font:width(suffix, size)
 
                 local x
                 if clock_align == "left" then
@@ -1083,6 +1128,8 @@ local function TimeTile(asset, config, x1, y1, x2, y2)
                 end
 
                 font:write(x, y1, time, size, r,g,b,1)
+                x = x + w_time
+                font:write(x, y1, suffix, size, r,g,b,1)
             end
         end
     elseif clock_mode == "analog_clock" then
@@ -1106,7 +1153,7 @@ local function TimeTile(asset, config, x1, y1, x2, y2)
             }
         end
 
-        local show_seconds = clock_type == "hms"
+        local show_seconds = clock_type == "hms" or clock_type == "hms_12"
 
         -- local function dots()
         --     gl.pushMatrix()
@@ -1405,7 +1452,7 @@ node.event("config_updated", function(config)
 end)
 
 local function Page(page)
-    local function get_duration(mode)
+    local function get_duration(playback_mode)
         local duration = page.duration
         if duration == 0 then
             for _, tile in ipairs(page.tiles) do
@@ -1426,8 +1473,8 @@ local function Page(page)
             end
             print("automatically set auto duration is", duration)
         end
-        if mode == "interactive" and page.interaction.duration == "forever" then
-            duration = 100000000
+        if playback_mode == "interactive" and page.interaction.duration == "forever" then
+            duration = "forever"
         end
         return duration
     end
@@ -1483,13 +1530,32 @@ local function Scheduler(page_source, job_queue)
     local SCHEDULE_LOOKAHEAD = 2
 
     local scheduled_until = sys.now()
-    local next_schedule = 0
+
     local showing_fallback = false
+    local scheduled_forever = false
 
-    local function enqueue_page(page, duration)
-        duration = duration or page.get_duration()
+    local function enqueue_page(page, playback_mode)
+        playback_mode = playback_mode or "default"
+
+        local duration = page.get_duration(playback_mode)
+
+        local starts = scheduled_until
+        local ends
+
+        if duration == "forever" then
+            -- more than 1000 days, so close enough
+            ends = starts + 100000000
+
+            -- If a 'forever' page is scheduled, note that this
+            -- is the case, so the config watcher can use this
+            -- in its decision on whether or not to reset the
+            -- scheduled jobs.
+            scheduled_forever = true
+        else
+            ends = starts + duration
+        end
+
         local tiles = page.get_tiles()
-
         for _, tile in ipairs(tiles) do
             local handler = ({
                 image = ImageTile,
@@ -1506,24 +1572,27 @@ local function Scheduler(page_source, job_queue)
             -- print "adding tile"
             job_queue.add(
                 handler(tile.asset, tile.config, tile.x1, tile.y1, tile.x2, tile.y2),
-                scheduled_until,
-                scheduled_until + duration
+                starts, ends
             )
         end
 
-        scheduled_until = scheduled_until + duration
-        next_schedule = scheduled_until - SCHEDULE_LOOKAHEAD
-        showing_fallback = page.is_fallback
-
-        tcp_clients.send(
-            "root/__fallback__",
-            page.is_fallback and "1" or "0"
+        job_queue.add(
+            function(starts, ends)
+                helper.wait_t(starts)
+                showing_fallback = page.is_fallback
+                tcp_clients.send(
+                    "root/__fallback__",
+                    page.is_fallback and "1" or "0"
+                )
+            end,
+            starts, ends
         )
-        -- print("FALLBACK?", showing_fallback)
+
+        scheduled_until = ends
     end
 
     local function tick(now)
-        if now < next_schedule then
+        if now < scheduled_until - SCHEDULE_LOOKAHEAD then
             return
         end
 
@@ -1532,16 +1601,14 @@ local function Scheduler(page_source, job_queue)
 
     local function reset_scheduler()
         job_queue.flush()
+        scheduled_forever = false
         scheduled_until = sys.now()
-        next_schedule = sys.now()
     end
 
     local function enqueue_interactive(pages)
         reset_scheduler()
-
         for i, page in ipairs(pages) do
-            local duration = page.get_duration "interactive"
-            enqueue_page(page, duration)
+            enqueue_page(page, "interactive")
         end
     end
 
@@ -1613,6 +1680,34 @@ local function Scheduler(page_source, job_queue)
             return
         end
     end
+
+    local last_setup_id, last_config_hash
+
+    node.event("config_updated", function(config)
+        local setup_id = config.__metadata.setup_id
+        local config_hash = config.__metadata.config_hash
+        local reset_mode = config.reset_mode
+
+        local force_reset
+
+        if reset_mode == "config" then
+            force_reset = config_hash ~= last_config_hash
+        elseif reset_mode == "setup" then
+            force_reset = setup_id ~= last_setup_id
+        elseif reset_mode == "in_forever" then
+            force_reset = scheduled_forever and config_hash ~= last_config_hash
+        else -- "none"
+            force_reset = false
+        end
+
+        if force_reset then
+            print("config updated: forcing scheduler reset")
+            reset_scheduler()
+        end
+
+        last_setup_id = setup_id
+        last_config_hash = config_hash
+    end)
 
     return {
         tick = tick;
